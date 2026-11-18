@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>/ʊ/ Sound Quest — Unit 2</title>
+<style>
+:root{
+  --bg1:#101735;--bg2:#26154d;--card:rgba(255,255,255,.10);
+  --line:rgba(255,255,255,.18);--text:#fff;--muted:#cbd3f4;
+  --cyan:#7ee8ff;--yellow:#ffd86b;--green:#7dffad;--red:#ff9292;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--text);font-family:Arial,Helvetica,sans-serif;
+background:radial-gradient(circle at top,#29346d 0%,var(--bg1) 42%,#0b1028 100%);}
+button{font-family:inherit}
+button:focus{outline:3px solid rgba(126,232,255,.55);outline-offset:2px}
+.app{width:min(1050px,100%);margin:auto;padding:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:25px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.28);backdrop-filter:blur(10px)}
+.hidden{display:none!important}
+.home{text-align:center;padding:42px 24px}
+.badge{display:inline-block;padding:8px 13px;border-radius:99px;background:rgba(126,232,255,.12);border:1px solid rgba(126,232,255,.3);color:var(--cyan);font-weight:900;letter-spacing:1px;font-size:12px}
+.home h1{font-size:clamp(36px,8vw,68px);margin:14px 0 4px}
+.home h2{font-size:18px;color:var(--yellow);margin:0 0 18px}
+.home p{max-width:700px;margin:12px auto;color:var(--muted);line-height:1.6}
+.start,.next,.restart{border:0;border-radius:15px;padding:15px 26px;font-weight:1000;font-size:17px;background:var(--cyan);color:#111936;cursor:pointer}
+.start{margin-top:12px;font-size:20px;padding:17px 32px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pill{padding:9px 13px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:13px;font-weight:900}
+.score{color:var(--cyan)}
+.timer{color:var(--yellow);font-size:18px}
+.progress{height:10px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin:16px 0 25px}
+.progressbar{height:100%;width:0;background:var(--cyan);transition:width .25s}
+.difficulty{font-size:12px;font-weight:1000;letter-spacing:1.5px;color:var(--yellow)}
+.question{font-size:clamp(25px,5vw,42px);font-weight:1000;line-height:1.15;margin:10px 0}
+.instruction{color:var(--muted);margin:0 0 18px;line-height:1.5}
+.listen{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(126,232,255,.35);background:rgba(126,232,255,.1);color:#fff;border-radius:13px;padding:11px 15px;font-weight:900;cursor:pointer;margin-bottom:16px}
+.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.choice{min-height:72px;border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;border-radius:17px;padding:15px;font-size:20px;font-weight:900;cursor:pointer;transition:.15s}
+.choice:hover{transform:translateY(-2px);background:rgba(255,255,255,.13)}
+.choice.correct{border-color:var(--green);background:rgba(125,255,173,.15)}
+.choice.wrong{border-color:var(--red);background:rgba(255,146,146,.13)}
+.choice:disabled{cursor:default}
+.feedback{min-height:32px;text-align:center;font-size:18px;font-weight:1000;margin:18px 0 8px}
+.good{color:var(--green)}.bad{color:var(--red)}
+.next{display:block;margin:8px auto 0}
+.dragbox{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:15px}
+.bank{display:flex;flex-wrap:wrap;gap:10px;min-height:60px}
+.word{border:0;background:#fff;color:#151b3b;border-radius:13px;padding:12px 15px;font-size:16px;font-weight:1000;cursor:pointer;touch-action:none;user-select:none}
+.word.selected{outline:4px solid var(--yellow);transform:translateY(-2px);background:#fff8d6}
+.word.used{opacity:.35;cursor:default;text-decoration:line-through}
+.columns{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.column{min-height:170px;border:2px dashed rgba(255,255,255,.28);border-radius:17px;padding:10px;text-align:center;background:rgba(255,255,255,.045);cursor:pointer;transition:.15s}
+.column:hover,.column.active{border-color:var(--cyan);background:rgba(126,232,255,.08)}
+.column h3{font-size:12px;color:var(--yellow);line-height:1.25;margin:2px 0 9px}
+.droptext{font-size:12px;color:#aeb7df}
+.column .placed{display:inline-block;margin-top:18px;background:#fff;color:#151b3b;border-radius:12px;padding:10px 12px;font-weight:1000}
+.tip{font-size:12px;color:#aeb7df;margin-top:10px}
+.result{text-align:center;padding:38px 20px}
+.finalscore{font-size:76px;font-weight:1000;color:var(--cyan);margin:8px}
+.rank{font-size:25px;font-weight:1000;color:var(--yellow)}
+.small{font-size:13px;color:var(--muted)}
+@media(max-width:700px){
+ .card{padding:18px}.home{padding:30px 16px}
+ .choices{grid-template-columns:1fr}
+ .columns{grid-template-columns:repeat(2,1fr)}
+ .column:last-child{grid-column:1/-1}
+ .column{min-height:145px}
+ .question{font-size:30px}
+ .word{font-size:15px;padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="home" class="card home">
+  <div class="badge">NONTHABURI MAGNET SCHOOL • ENGLISH PROGRAM</div>
+  <h1>🎧 /ʊ/ SOUND QUEST</h1>
+  <h2>UNIT 2 REVIEW</h2>
+  <p><b>NO TYPING • NO IPA TRANSCRIPTION</b></p>
+  <p>Choose the correct word, listen to the pronunciation, and complete the word-matching challenge by <b>clicking</b> or dragging.</p>
+  <p>⏱ Easy questions: <b>15 seconds</b> &nbsp; • &nbsp; 🔥 Difficult questions: <b>25 seconds</b></p>
+  <button class="start" onclick="startGame()">START CHALLENGE 🚀</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="top">
+    <div class="pill" id="roundLabel">ROUND</div>
+    <div class="pill">SCORE <span class="score" id="score">0</span></div>
+    <div class="pill timer">⏱ <span id="time">15</span>s</div>
+  </div>
+  <div class="progress"><div class="progressbar" id="progress"></div></div>
+  <div id="screen"></div>
+</section>
+
+<section id="result" class="card result hidden">
+  <div class="badge">CHALLENGE COMPLETE</div>
+  <h1>🎉 /ʊ/ MASTER!</h1>
+  <div class="finalscore" id="finalScore">0</div>
+  <div class="rank" id="rank"></div>
+  <p id="resultMessage"></p>
+  <button class="restart" onclick="location.reload()">PLAY AGAIN 🔄</button>
+</section>
+
+</div>
+
+<script>
+"use strict";
+
+const questions = [
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"hood",
+   options:["heard","hood","hard","hide"], answer:"hood"},
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"look",
+   options:["luck","Luke","look","lock"], answer:"look"},
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"pull",
+   options:["pal","pole","Paul","pull"], answer:"pull"},
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"full",
+   options:["fool","foul","fall","full"], answer:"full"},
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"good",
+   options:["God","goad","good","glued"], answer:"good"},
+
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the same vowel sound as LOOK?", say:"book",
+   options:["food","book","go","ball"], answer:"book"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"woman",
+   options:["woman","home","talk","suit"], answer:"woman"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"cushion",
+   options:["station","cushion","student","food"], answer:"cushion"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"sugar",
+   options:["sugar","school","ball","home"], answer:"sugar"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"should",
+   options:["show","should","shoe","share"], answer:"should"},
+
+  {kind:"drag", difficulty:"DIFFICULT", time:25,
+   q:"Click a word, then click the column that matches its clue.",
+   columns:[
+     {clue:"A book for recipes",answer:"cookbook"},
+     {clue:"A soft thing you can sit on",answer:"cushion"},
+     {clue:"Means 'ought to'",answer:"should"},
+     {clue:"A sweet ingredient",answer:"sugar"},
+     {clue:"Means 'complete'",answer:"full"}
+   ],
+   words:["cookbook","cushion","should","sugar","full","food","home","ball","student","go"]
+  },
+
+  {kind:"mc", difficulty:"EASY", time:15, q:"Which word has the /ʊ/ sound?", say:"put",
+   options:["put","pet","part","port"], answer:"put"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"cookbook",
+   options:["cookbook","cakebook","schoolbook","notebook"], answer:"cookbook"},
+  {kind:"mc", difficulty:"DIFFICULT", time:25, q:"Which word has the /ʊ/ sound?", say:"bulletin",
+   options:["bulletin","between","bottle","button"], answer:"bulletin"}
+];
+
+let index=0;
+let score=0;
+let timerId=null;
+let locked=false;
+let selectedWord=null;
+let placedCount=0;
+
+function startGame(){
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  index=0; score=0;
+  document.getElementById("score").textContent="0";
+  renderQuestion();
+}
+
+function renderQuestion(){
+  stopTimer();
+  locked=false;
+  selectedWord=null;
+  placedCount=0;
+
+  const q=questions[index];
+  document.getElementById("roundLabel").textContent =
+    q.kind==="drag" ? "ROUND 3 • WORD MATCH" : "ROUND • "+q.difficulty;
+  document.getElementById("progress").style.width =
+    ((index/questions.length)*100)+"%";
+
+  if(q.kind==="mc") renderMC(q);
+  else renderDrag(q);
+
+  startTimer(q.time);
+}
+
+function startTimer(seconds){
+  let t=seconds;
+  document.getElementById("time").textContent=t;
+  timerId=setInterval(function(){
+    t--;
+    document.getElementById("time").textContent=t;
+    if(t<=0){
+      stopTimer();
+      if(!locked){
+        locked=true;
+        if(questions[index].kind==="mc"){
+          disableChoices();
+          setFeedback("⏰ Time's up!","bad");
+          document.getElementById("nextBtn").classList.remove("hidden");
+        }else{
+          setFeedback("⏰ Time's up! Move to the next challenge.","bad");
+          document.getElementById("nextBtn").classList.remove("hidden");
+        }
+      }
+    }
+  },1000);
+}
+function stopTimer(){
+  if(timerId!==null){clearInterval(timerId);timerId=null;}
+}
+function speak(word){
+  if(!("speechSynthesis" in window)){return;}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(word);
+  u.lang="en-US";
+  u.rate=.75;
+  window.speechSynthesis.speak(u);
+}
+function renderMC(q){
+  const screen=document.getElementById("screen");
+  screen.innerHTML=
+    '<div class="difficulty">'+q.difficulty+' • '+q.time+' SECONDS</div>'+
+    '<div class="question">'+q.q+'</div>'+
+    '<button class="listen" onclick="speak(\''+escapeJS(q.say)+'\')">🔊 LISTEN: '+q.say.toUpperCase()+'</button>'+
+    '<p class="instruction">Choose ONE answer. No typing.</p>'+
+    '<div class="choices" id="choices"></div>'+
+    '<div class="feedback" id="feedback"></div>'+
+    '<button class="next hidden" id="nextBtn" onclick="nextQuestion()">NEXT ➜</button>';
+
+  const box=document.getElementById("choices");
+  q.options.forEach(function(option){
+    const b=document.createElement("button");
+    b.className="choice";
+    b.textContent=option;
+    b.onclick=function(){answerMC(b,option,q.answer);};
+    box.appendChild(b);
+  });
+}
+function escapeJS(s){
+  return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+}
+function answerMC(button,chosen,answer){
+  if(locked)return;
+  locked=true;
+  stopTimer();
+  disableChoices();
+  if(chosen===answer){
+    score+=100;
+    button.classList.add("correct");
+    setFeedback("✅ Correct! +100","good");
+  }else{
+    button.classList.add("wrong");
+    score+=0;
+    const all=[...document.querySelectorAll(".choice")];
+    all.forEach(function(b){if(b.textContent===answer)b.classList.add("correct");});
+    setFeedback("❌ Not quite. The correct answer is "+answer+".","bad");
+  }
+  document.getElementById("score").textContent=score;
+  document.getElementById("nextBtn").classList.remove("hidden");
+}
+function disableChoices(){
+  document.querySelectorAll(".choice").forEach(function(b){b.disabled=true;});
+}
+function setFeedback(msg,cls){
+  const f=document.getElementById("feedback");
+  if(f){f.textContent=msg;f.className="feedback "+cls;}
+}
+
+function renderDrag(q){
+  const screen=document.getElementById("screen");
+  screen.innerHTML=
+    '<div class="difficulty">DIFFICULT • 25 SECONDS</div>'+
+    '<div class="question">'+q.q+'</div>'+
+    '<p class="instruction">You can <b>CLICK</b> a word and then <b>CLICK</b> a column. Drag-and-drop also works on computers.</p>'+
+    '<div class="dragbox"><div class="bank" id="bank"></div><div class="tip">💡 Tap a word to select it. Then tap its correct column.</div></div>'+
+    '<div class="columns" id="columns"></div>'+
+    '<div class="feedback" id="feedback"></div>'+
+    '<button class="next hidden" id="nextBtn" onclick="nextQuestion()">NEXT ➜</button>';
+
+  const bank=document.getElementById("bank");
+  q.words.forEach(function(word){
+    const el=document.createElement("button");
+    el.className="word";
+    el.textContent=word;
+    el.dataset.word=word;
+    el.onclick=function(){selectWord(el,word);};
+    el.draggable=true;
+    el.addEventListener("dragstart",function(e){
+      e.dataTransfer.setData("text/plain",word);
+    });
+    bank.appendChild(el);
+  });
+
+  const columns=document.getElementById("columns");
+  q.columns.forEach(function(col){
+    const c=document.createElement("div");
+    c.className="column";
+    c.dataset.answer=col.answer;
+    c.innerHTML='<h3>'+col.clue+'</h3><div class="droptext">CLICK HERE</div>';
+    c.onclick=function(){placeSelectedWord(c);};
+    c.addEventListener("dragover",function(e){e.preventDefault();c.classList.add("active");});
+    c.addEventListener("dragleave",function(){c.classList.remove("active");});
+    c.addEventListener("drop",function(e){
+      e.preventDefault();
+      c.classList.remove("active");
+      placeDraggedWord(c,e.dataTransfer.getData("text/plain"));
+    });
+    columns.appendChild(c);
+  });
+}
+function selectWord(el,word){
+  if(locked || el.classList.contains("used"))return;
+  document.querySelectorAll(".word").forEach(function(w){w.classList.remove("selected");});
+  el.classList.add("selected");
+  selectedWord=word;
+  setFeedback("Selected “"+word+"” — now click the correct column.","good");
+}
+function placeSelectedWord(column){
+  if(locked || !selectedWord)return;
+  placeWord(column,selectedWord);
+}
+function placeDraggedWord(column,word){
+  if(locked || !word)return;
+  placeWord(column,word);
+}
+function placeWord(column,word){
+  if(word!==column.dataset.answer){
+    setFeedback("❌ Try again. Read the clue carefully.","bad");
+    return;
+  }
+  const el=[...document.querySelectorAll(".word")].find(function(w){
+    return w.dataset.word===word && !w.classList.contains("used");
+  });
+  if(!el)return;
+
+  el.classList.add("used");
+  el.classList.remove("selected");
+  el.disabled=true;
+
+  column.innerHTML='<h3>'+column.querySelector("h3").textContent+'</h3><div class="placed">'+word+'</div>';
+  placedCount++;
+  selectedWord=null;
+  score+=100;
+  document.getElementById("score").textContent=score;
+
+  if(placedCount===5){
+    locked=true;
+    stopTimer();
+    setFeedback("🎉 Excellent! All 5 matches are correct! +500","good");
+    document.getElementById("nextBtn").classList.remove("hidden");
+  }else{
+    setFeedback("✅ Correct! Keep going.","good");
+  }
+}
+function nextQuestion(){
+  if(index<questions.length-1){
+    index++;
+    renderQuestion();
+  }else{
+    finish();
+  }
+}
+function finish(){
+  stopTimer();
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+  document.getElementById("finalScore").textContent=score;
+  let rank="💪 KEEP PRACTICING";
+  if(score>=1300)rank="🏆 /ʊ/ SOUND MASTER";
+  else if(score>=900)rank="🔥 /ʊ/ EXPERT";
+  else if(score>=600)rank="⭐ GREAT JOB";
+  document.getElementById("rank").textContent=rank;
+  document.getElementById("resultMessage").textContent=
+    "This review uses multiple choice, listening, and a click-to-sort challenge. There is NO IPA transcription and NO typing.";
+}
+</script>
+</body>
+</html>
